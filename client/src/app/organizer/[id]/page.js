@@ -107,7 +107,7 @@ export default function OrganizerProfilePage() {
             <button
               onClick={handleFollow}
               disabled={followingBusy}
-              className={`absolute right-5 top-5 z-20 rounded-xl px-5 py-2.5 text-sm font-semibold shadow-lg backdrop-blur-md transition ${
+              className={`absolute right-5 top-5 z-20 rounded-xl border-none px-5 py-2.5 text-sm font-semibold shadow-lg backdrop-blur-md transition ${
                 organizer.isFollowing
                   ? 'border border-white/20 bg-black/30 text-white hover:bg-black/45'
                   : 'bg-[#FFA500] text-white hover:opacity-90'
@@ -149,7 +149,7 @@ export default function OrganizerProfilePage() {
               <div className="rounded-2xl border border-white/10 bg-white/5 p-5 shadow-lg shadow-black/10">
                 <div className="text-xs uppercase tracking-wider text-white/50">Rating</div>
                 <div className="text-2xl font-bold text-[#FFA500]">
-                  {organizer.ratingsCount ? `${formatRating(organizer.averageRating)} / 5` : formatRating(0)}
+                  {organizer.ratingsCount ? `${formatRating(organizer.averageRating)} / 5.0` : formatRating(0)}
                 </div>
               </div>
               <div className="rounded-2xl border border-white/10 bg-white/5 p-5 shadow-lg shadow-black/10">

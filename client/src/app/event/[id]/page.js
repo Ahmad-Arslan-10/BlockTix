@@ -3,7 +3,19 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { FaCalendarAlt, FaClock, FaMapMarkerAlt, FaHeart, FaRegHeart } from 'react-icons/fa';
+import {
+  FaCalendarAlt,
+  FaClock,
+  FaMapMarkerAlt,
+  FaHeart,
+  FaRegHeart,
+  FaShareAlt,
+  FaWhatsapp,
+  FaFacebookF,
+  FaTwitter,
+  FaInstagram,
+  FaLink,
+} from 'react-icons/fa';
 import { useAuth } from '@/context/AuthContext';
 import { useParams, useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
@@ -30,6 +42,7 @@ function Event() {
   const router = useRouter();
   const id = params.id; // eventId UUID
   const checkoutFinalizedRef = useRef(false);
+  const shareWrapRef = useRef(null);
 
   const [event,      setEvent]      = useState(null);
   const [loading,    setLoading]    = useState(true);
@@ -43,6 +56,8 @@ function Event() {
   const [buyBlockMessage,setBuyBlockMessage]= useState(null);
   const [organizer,      setOrganizer]      = useState(null);
   const [organizerBusy,  setOrganizerBusy]  = useState(false);
+  const [shareOpen,      setShareOpen]      = useState(false);
+  const [shareUrl,       setShareUrl]       = useState('');
   const [ratingSummary,  setRatingSummary]  = useState({
     averageRating: 0, ratingsCount: 0, canRate: false, userRating: null,
   });
@@ -68,6 +83,34 @@ function Event() {
   useEffect(() => {
     if (id) fetchEvent();
   }, [id, fetchEvent]);
+
+  useEffect(() => {
+    if (!id) return;
+    if (typeof window === 'undefined') return;
+    setShareUrl(`${window.location.origin}/event/${id}`);
+  }, [id]);
+
+  useEffect(() => {
+    if (!shareOpen) return;
+
+    const onPointerDown = (e) => {
+      if (!shareWrapRef.current) return;
+      if (!shareWrapRef.current.contains(e.target)) setShareOpen(false);
+    };
+
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') setShareOpen(false);
+    };
+
+    document.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('touchstart', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown);
+      document.removeEventListener('touchstart', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [shareOpen]);
 
   useEffect(() => {
     if (!event?.organizerId) return;
@@ -254,6 +297,55 @@ function Event() {
     }
   }
 
+  async function copyShareLink(extraSuccessMessage) {
+    const url = shareUrl || (typeof window !== 'undefined' ? `${window.location.origin}/event/${id}` : '');
+    if (!url) return;
+    if (!shareUrl) setShareUrl(url);
+
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        const el = document.createElement('textarea');
+        el.value = url;
+        el.setAttribute('readonly', '');
+        el.style.position = 'absolute';
+        el.style.left = '-9999px';
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+      }
+      toast.success(extraSuccessMessage || 'Link copied');
+      setShareOpen(false);
+    } catch {
+      toast.error('Unable to copy link');
+    }
+  }
+
+  async function handleShare() {
+    const url = shareUrl || (typeof window !== 'undefined' ? `${window.location.origin}/event/${id}` : '');
+    if (!url) return;
+    if (!shareUrl) setShareUrl(url);
+
+    // Prefer native share sheet on mobile (includes Instagram/WhatsApp/etc.)
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({
+          title: event?.event ? `${event.event} | BlockTix` : 'BlockTix Event',
+          text: event?.event ? `Check out this event: ${event.event}` : 'Check out this event on BlockTix',
+          url,
+        });
+        return;
+      } catch (err) {
+        if (err?.name === 'AbortError') return; // user cancelled
+        // fall back to menu
+      }
+    }
+
+    setShareOpen((v) => !v);
+  }
+
   async function handleBuyTicket() {
     if (!user) { toast.error('Login to buy tickets'); return; }
     try {
@@ -358,7 +450,7 @@ function Event() {
         {/* CONTENT GRID SKELETON */}
         <div className="mx-auto max-w-7xl px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-10">
           {/* ABOUT SKELETON */}
-          <div className="lg:col-span-2 rounded-3xl bg-white/10 backdrop-blur-md p-10 shadow-lg border border-white/10">
+          <div className="lg:col-span-2 rounded-3xl bg-white/10 backdrop-blur-md p-10 border border-white/10">
             <Skeleton className="h-8 w-40 mb-6" variant="rect" />
             <div className="space-y-3">
               <Skeleton className="h-4 w-full" variant="text" />
@@ -378,7 +470,7 @@ function Event() {
           </div>
 
           {/* LOCATION SKELETON */}
-          <div className="lg:col-span-2 rounded-3xl bg-white/10 backdrop-blur-md p-8 shadow-lg border border-white/10">
+          <div className="lg:col-span-2 rounded-3xl bg-white/10 backdrop-blur-md p-8 border border-white/10">
             <Skeleton className="h-8 w-40 mb-6" variant="rect" />
             <Skeleton className="h-64 w-full rounded-2xl" variant="rect" />
           </div>
@@ -400,13 +492,18 @@ function Event() {
   const earlyBirdActive = eb?.enabled && isTimeValid && isQuotaValid;
 
   const organizerRatingLabel = organizer?.ratingsCount
-    ? `${Number(organizer.averageRating || 0).toFixed(1)} / 5`
+    ? `${Number(organizer.averageRating || 0).toFixed(1)} / 5.0`
     : 'No ratings yet';
   const eventRatingLabel = ratingSummary.ratingsCount
-    ? `${Number(ratingSummary.averageRating || 0).toFixed(1)} / 5`
+    ? `${Number(ratingSummary.averageRating || 0).toFixed(1)} / 5.0`
     : 'No ratings yet';
 
-  const cardBase = 'rounded-3xl bg-white/5 backdrop-blur-md border border-white/10 shadow-lg';
+  const cardBase = 'rounded-3xl bg-white/5 backdrop-blur-md border border-white/10';
+  const shareItemClass = 'flex w-full items-center gap-3 rounded-xl border-none px-3 py-2 text-sm text-white/80 hover:bg-white/10 hover:text-white transition';
+
+  const shareWhatsAppHref = `https://wa.me/?text=${encodeURIComponent(`${event.event} - ${shareUrl}`)}`;
+  const shareFacebookHref = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+  const shareTwitterHref = `https://twitter.com/intent/tweet?text=${encodeURIComponent(event.event)}&url=${encodeURIComponent(shareUrl)}`;
 
   return (
     <div className="min-h-screen">
@@ -419,19 +516,86 @@ function Event() {
         >
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
-          {user && (
-            <button
-              onClick={handleToggleWishlist}
-              disabled={savingWish}
-              className="absolute top-6 right-6 z-20 flex items-center gap-2 rounded-full bg-black/40 px-4 py-2 text-white backdrop-blur-md hover:bg-black/60 transition disabled:opacity-60"
-              title={isSaved ? 'Remove from wishlist' : 'Save to wishlist'}
-            >
-              {isSaved
-                ? <FaHeart    className="text-red-400 text-lg" />
-                : <FaRegHeart className="text-white  text-lg" />
-              }
-            </button>
-          )}
+          <div className="absolute top-6 right-6 z-20 flex items-center gap-2">
+            <div ref={shareWrapRef} className="relative">
+              <button
+                onClick={handleShare}
+                className="flex items-center border-none gap-2 rounded-full bg-black/40 px-4 py-2 text-white backdrop-blur-md hover:bg-black/60 transition"
+                title="Share"
+                aria-haspopup="menu"
+                aria-expanded={shareOpen}
+              >
+                <FaShareAlt className="text-white text-lg" />
+              </button>
+
+              {shareOpen && (
+                <div
+                  role="menu"
+                  className="absolute right-0 mt-2 w-64 rounded-2xl border border-white/10 bg-gray-950/95 p-2 shadow-2xl backdrop-blur-xl"
+                >
+                  <button role="menuitem" onClick={() => copyShareLink()} className={shareItemClass}>
+                    <FaLink className="text-white/70" />
+                    Copy link
+                  </button>
+
+                  <a
+                    role="menuitem"
+                    href={shareWhatsAppHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={shareItemClass}
+                    onClick={() => setShareOpen(false)}
+                  >
+                    <FaWhatsapp className="text-green-400" />
+                    WhatsApp
+                  </a>
+
+                  <a
+                    role="menuitem"
+                    href={shareFacebookHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={shareItemClass}
+                    onClick={() => setShareOpen(false)}
+                  >
+                    <FaFacebookF className="text-blue-400" />
+                    Facebook
+                  </a>
+
+                  <a
+                    role="menuitem"
+                    href={shareTwitterHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={shareItemClass}
+                    onClick={() => setShareOpen(false)}
+                  >
+                    <FaTwitter className="text-sky-300" />
+                    X / Twitter
+                  </a>
+
+                  <button role="menuitem" onClick={() => copyShareLink('Link copied — paste it into Instagram')} className={shareItemClass}>
+                    <FaInstagram className="text-pink-300" />
+                    Instagram (copy link)
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {user && (
+              <button
+                onClick={handleToggleWishlist}
+                disabled={savingWish}
+                className="flex items-center border-none gap-2 rounded-full bg-black/40 px-4 py-2 text-white backdrop-blur-md hover:bg-black/60 transition disabled:opacity-60"
+                title={isSaved ? 'Remove from wishlist' : 'Save to wishlist'}
+              >
+                {isSaved
+                  ? <FaHeart    className="text-red-400 text-lg" />
+                  : <FaRegHeart className="text-white  text-lg" />
+                }
+              </button>
+            )}
+          </div>
 
           <div className="relative z-10 w-full p-8">
             <div className="mx-auto max-w-7xl space-y-4 text-white">
@@ -489,7 +653,7 @@ function Event() {
           <button
             onClick={handleBuyTicket}
             disabled={event.remainingTickets === 0 || !canBuy || isBuying}
-            className={`w-full rounded-xl py-4 px-6 text-lg font-semibold shadow-lg transition cursor-pointer
+            className={`border-none w-full rounded-xl py-4 px-6 text-lg font-semibold transition cursor-pointer
               ${event.remainingTickets > 0 && canBuy && !isBuying
                 ? 'bg-gradient-to-r from-[#FFA500] to-indigo-600 text-white'
                 : 'bg-white/10 text-white/50 cursor-not-allowed'
@@ -540,7 +704,7 @@ function Event() {
             {/* Avatar */}
             <button
               onClick={() => event.organizerId && router.push(`/organizer/${event.organizerId}`)}
-              className="h-20 w-20 flex-shrink-0 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-3xl font-bold text-[#FFA500] overflow-hidden hover:opacity-80 transition"
+              className="h-20 w-20 flex-shrink-0 rounded-full bg-white/10 border-none border-white/20 flex items-center justify-center text-3xl font-bold text-[#FFA500] overflow-hidden hover:opacity-80 transition"
             >
               {organizer?.profilePicture ? (
                 <Image
@@ -559,7 +723,7 @@ function Event() {
               <p className="text-xs uppercase tracking-widest text-white/40 mb-1">Organizer</p>
               <button
                 onClick={() => event.organizerId && router.push(`/organizer/${event.organizerId}`)}
-                className="text-xl font-bold text-black/80 hover:text-[#FFA500] transition truncate block"
+                className="text-xl font-bold bg-white/30 text-white/40 rounded-lg border-none outline-none hover:text-[#FFA500] transition truncate block"
               >
                 {organizer?.name || 'Organizer'}
               </button>

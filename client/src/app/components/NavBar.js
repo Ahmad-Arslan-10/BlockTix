@@ -67,7 +67,7 @@ function Navbar() {
 
   const secondaryBtnClass = "bg-white/10 text-white hover:bg-white/20 font-bold py-2 px-4 rounded my-2 w-auto no-underline transition w-auto block text-center";
   const secondaryBtnClassDesktop = "bg-white/10 text-white hover:bg-white/20 font-bold py-2 px-4 rounded no-underline transition";
-  const primaryBtnClass = "btn w-auto block text-center no-underline my-2";
+  const primaryBtnClass = "btn w-auto block border-none text-center no-underline my-2";
 
   return (
 
@@ -96,6 +96,7 @@ function Navbar() {
             <Link href="/" className="link">Home</Link>
             <Link href="/discover" className="link">Discover</Link>
             <Link href="/marketplace" className="link">Marketplace</Link>
+            <Link href="/community" className="link">Community</Link>
             {isAuthed && user.role !== 'user' && (
               <Link href="/dashboard/organizer" className="link">Dashboard</Link>
             )}
@@ -161,12 +162,12 @@ function Navbar() {
               </div>
 
               <Link href="/profile" className={secondaryBtnClassDesktop}>Profile</Link>
-              <button onClick={logout} className="btn w-auto no-underline">Log Out</button>
+              <button onClick={logout} className="btn border-none w-auto no-underline">Log Out</button>
             </div>
           ) : (
             <div className="flex items-center gap-2">
               <Link href="/login" className={secondaryBtnClassDesktop}>Sign In</Link>
-              <Link href="/signup" className="btn w-auto no-underline">Sign Up</Link>
+              <Link href="/signup" className="btn border-none w-auto no-underline">Sign Up</Link>
             </div>
           )}
         </div>
@@ -206,6 +207,7 @@ function Navbar() {
                 <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="link block py-2  font-medium">Home</Link>
                 <Link href="/discover" onClick={() => setIsMobileMenuOpen(false)} className="link block py-2  font-medium">Discover</Link>
                 <Link href="/marketplace" onClick={() => setIsMobileMenuOpen(false)} className="link block py-2  font-medium">Marketplace</Link>
+                <Link href="/community" onClick={() => setIsMobileMenuOpen(false)} className="link block py-2  font-medium">Community</Link>
 
                 {isAuthed && user.role !== 'user' && (
                   <Link
