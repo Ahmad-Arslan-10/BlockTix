@@ -3,11 +3,14 @@
 import { useState } from 'react';
 import { FaHeart, FaRegHeart, FaComment, FaTrash } from 'react-icons/fa';
 import toast from 'react-hot-toast';
+import Skeleton from './Skeleton';
 
 export default function CommunityPost({ post, currentUser, onDelete, onLikeChange }) {
   const [showComments, setShowComments] = useState(false);
+  const [showAllComments, setShowAllComments] = useState(false);
   const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState(post.likes || 0);
+  const [commentCount, setCommentCount] = useState(post.commentCount || 0);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [loadingComments, setLoadingComments] = useState(false);
@@ -36,7 +39,7 @@ export default function CommunityPost({ post, currentUser, onDelete, onLikeChang
       } else {
         toast.error(data.error);
       }
-    } catch (err) {
+    } catch {
       toast.error('Failed to like post');
     }
   };
@@ -44,18 +47,22 @@ export default function CommunityPost({ post, currentUser, onDelete, onLikeChang
   const loadComments = async () => {
     if (showComments) {
       setShowComments(false);
+      setShowAllComments(false);
       return;
     }
 
+    setShowComments(true);
+    setShowAllComments(false);
     setLoadingComments(true);
     try {
       const res = await fetch(`/api/community/comments?postId=${post.postId}`);
       const data = await res.json();
       if (data.success) {
-        setComments(data.comments);
-        setShowComments(true);
+        const fetchedComments = data.comments || [];
+        setComments(fetchedComments);
+        setCommentCount(fetchedComments.length);
       }
-    } catch (err) {
+    } catch {
       toast.error('Failed to load comments');
     } finally {
       setLoadingComments(false);
@@ -87,13 +94,14 @@ export default function CommunityPost({ post, currentUser, onDelete, onLikeChang
 
       const data = await res.json();
       if (data.success) {
-        setComments([data.comment, ...comments]);
+        setComments((prevComments) => [data.comment, ...prevComments]);
+        setCommentCount((prevCount) => prevCount + 1);
         setNewComment('');
         toast.success('Comment added');
       } else {
         toast.error(data.error);
       }
-    } catch (err) {
+    } catch {
       toast.error('Failed to add comment');
     } finally {
       setAddingComment(false);
@@ -115,11 +123,14 @@ export default function CommunityPost({ post, currentUser, onDelete, onLikeChang
         } else {
           toast.error(data.error);
         }
-      } catch (err) {
+      } catch {
         toast.error('Failed to delete post');
       }
     }
   };
+
+  const visibleComments = showAllComments ? comments : comments.slice(0, 2);
+  const hiddenCommentsCount = Math.max(comments.length - 2, 0);
 
   return (
     <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-4 sm:p-6 mb-4">
@@ -156,6 +167,8 @@ export default function CommunityPost({ post, currentUser, onDelete, onLikeChang
         )}
       </div>
 
+
+
       {/* Content */}
       <div className="mb-4">
         <p className="text-white text-sm sm:text-base leading-relaxed">{post.content}</p>
@@ -171,7 +184,7 @@ export default function CommunityPost({ post, currentUser, onDelete, onLikeChang
       {/* Stats */}
       <div className="flex gap-4 text-xs text-white/60 mb-4 border-y border-white/10 py-3">
         <span>{likes} likes</span>
-        <span>{comments.length} comments</span>
+        <span>{commentCount} comments</span>
       </div>
 
       {/* Actions */}
@@ -197,10 +210,23 @@ export default function CommunityPost({ post, currentUser, onDelete, onLikeChang
       {showComments && (
         <div className="border-t border-white/10 pt-4">
           <div className="space-y-3 mb-4 max-h-60 overflow-y-auto">
-            {comments.length === 0 ? (
+            {loadingComments ? (
+              <div className="space-y-3">
+                {[...Array(3)].map((_, index) => (
+                  <div key={`comment-skeleton-${index}`} className="bg-white/5 rounded-lg p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Skeleton variant="circle" className="w-6 h-6" />
+                      <Skeleton className="h-3 w-24" />
+                    </div>
+                    <Skeleton className="h-3 w-full mb-2" />
+                    <Skeleton className="h-3 w-4/5" />
+                  </div>
+                ))}
+              </div>
+            ) : comments.length === 0 ? (
               <p className="text-xs text-white/50 text-center py-3">No comments yet</p>
             ) : (
-              comments.map((comment) => (
+              visibleComments.map((comment) => (
                 <div key={comment.commentId} className="bg-white/5 rounded-lg p-3">
                   <div className="flex items-center gap-2 mb-2">
                     {comment.authorPicture ? (
@@ -224,6 +250,17 @@ export default function CommunityPost({ post, currentUser, onDelete, onLikeChang
               ))
             )}
           </div>
+
+          {!loadingComments && comments.length > 2 && (
+            <button
+              onClick={() => setShowAllComments((prev) => !prev)}
+              className="mb-4 text-xs bg-[#FFA500] hover:bg-[#FF8C00] text-black font-semibold transition"
+            >
+              {showAllComments
+                ? 'Show less comments'
+                : `Show more comments (${hiddenCommentsCount})`}
+            </button>
+          )}
 
           {/* Add Comment */}
           <div className="flex gap-2">

@@ -5,7 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import CommunityPost from '../components/CommunityPost';
 import CreatePost from '../components/CreatePost';
-import Skeleton from '../components/Skeleton';
+import CommunityPostSkeleton from '../components/CommunityPostSkeleton';
 
 export default function CommunityPage() {
   const { user } = useAuth();
@@ -81,7 +81,7 @@ export default function CommunityPage() {
         {loading ? (
           <div className="space-y-4">
             {[...Array(3)].map((_, i) => (
-              <Skeleton key={i} />
+              <CommunityPostSkeleton key={i} />
             ))}
           </div>
         ) : posts.length === 0 ? (

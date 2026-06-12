@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  button {
+    border: none !important;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+}
+
 @layer components {
   * {
     font-family: 'Inter', sans-serif;
