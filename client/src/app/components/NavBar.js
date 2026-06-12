@@ -128,7 +128,7 @@ function Navbar() {
                       <span className="text-sm font-semibold text-white">Notifications</span>
                       <button
                         onClick={() => setIsNotifOpen(false)}
-                        className="text-white/70 hover:text-white text-xs"
+                        className="text-white/70 bg-black hover:text-white text-xs"
                       >
                         Close
                       </button>
