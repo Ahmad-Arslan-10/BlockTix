@@ -7,7 +7,6 @@ import { useAuth } from '@/context/AuthContext';
 const QUICK_ACTIONS = [
   { label: 'Music events', message: 'Show me music events' },
   { label: 'Sports events', message: 'Show me sports events' },
-  { label: 'Free events', message: 'Any free events?' },
   { label: 'Upcoming festivals', message: 'festival events' },
 ];
 
@@ -83,6 +82,12 @@ export default function RagChatbot() {
   const inputRef = useRef(null);
   const endRef = useRef(null);
 
+  function focusInput() {
+    window.requestAnimationFrame(() => {
+      inputRef.current?.focus();
+    });
+  }
+
   useEffect(() => {
     setMessages((current) =>
       current.length === 1 && current[0].role === 'assistant' ? [welcomeMessage] : current
@@ -94,7 +99,7 @@ export default function RagChatbot() {
   }, [messages, loading]);
 
   useEffect(() => {
-    if (isOpen && !loading) inputRef.current?.focus();
+    if (isOpen && !loading) focusInput();
   }, [isOpen, loading, messages.length]);
 
   async function sendMessage(overrideMessage) {
@@ -103,7 +108,6 @@ export default function RagChatbot() {
 
     setMessages((current) => [...current, { role: 'user', content, events: [] }]);
     setInput('');
-    if (isOpen) inputRef.current?.focus();
     setLoading(true);
 
     try {
@@ -133,7 +137,7 @@ export default function RagChatbot() {
       ]);
     } finally {
       setLoading(false);
-      if (isOpen) inputRef.current?.focus();
+      if (isOpen) focusInput();
     }
   }
 

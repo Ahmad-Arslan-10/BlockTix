@@ -50,8 +50,8 @@ function Footer() {
                 </a>
               </li>
               <li>
-                <a href="/wallet" className="no-underline text-white/70 hover:text-[#FFA500] text-sm font-medium transition-colors duration-200">
-                  Wallet Setup
+                <a href="/profile" className="no-underline text-white/70 hover:text-[#FFA500] text-sm font-medium transition-colors duration-200">
+                  Profile
                 </a>
               </li>
             
@@ -65,11 +65,6 @@ function Footer() {
               <li>
                 <a href="/help" className="no-underline text-white/70 hover:text-[#FFA500] text-sm font-medium transition-colors duration-200">
                   Help Center
-                </a>
-              </li>
-              <li>
-                <a href="/faq" className="no-underline text-white/70 hover:text-[#FFA500] text-sm font-medium transition-colors duration-200">
-                  FAQ
                 </a>
               </li>
               <li>
