@@ -655,7 +655,7 @@ function Event() {
             disabled={event.remainingTickets === 0 || !canBuy || isBuying}
             className={`border-none w-full rounded-xl py-4 px-6 text-lg font-semibold transition cursor-pointer
               ${event.remainingTickets > 0 && canBuy && !isBuying
-                ? 'bg-gradient-to-r from-[#FFA500] to-indigo-600 text-white'
+                ? 'bg-[#FFA500] text-white'
                 : 'bg-white/10 text-white/50 cursor-not-allowed'
               }`}
           >
@@ -723,7 +723,7 @@ function Event() {
               <p className="text-xs uppercase tracking-widest text-white/40 mb-1">Organizer</p>
               <button
                 onClick={() => event.organizerId && router.push(`/organizer/${event.organizerId}`)}
-                className="text-xl font-bold bg-white/30 text-white/40 rounded-lg border-none outline-none hover:text-[#FFA500] transition truncate block"
+                className="text-xl font-bold border-white/20 bg-white/5 hover:bg-white/10 rounded-lg border-none outline-none text-[#FFA500] transition truncate block"
               >
                 {organizer?.name || 'Organizer'}
               </button>
