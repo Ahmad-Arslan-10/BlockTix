@@ -45,6 +45,12 @@ const eventSchema = new mongoose.Schema({
     required: true,
     min: 0
   },
+  description: {
+    type: String,
+    default: '',
+    trim: true,
+    maxlength: 5000,
+  },
   image: {
     type: String,
     default: ""

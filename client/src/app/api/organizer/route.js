@@ -23,6 +23,7 @@ export async function POST(req) {
         totalTickets,
         remainingTickets: totalTickets,
         image,
+        description: description || '',
                 organizerId,
                 resaleCapEnabled: !!resaleCapEnabled,
                 resaleCapPercent: Number.isFinite(Number(resaleCapPercent))
