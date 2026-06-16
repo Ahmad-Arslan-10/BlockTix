@@ -204,7 +204,7 @@ function OrganizerDashboard() {
   const resetEventForm = () => {
     setFormData({
       event: '', date: '', time: '', location: '', category: '',
-      price: 0, totalTickets: 0, image: '',
+      price: 0, totalTickets: 0, image: '', description: '',
       ebEnabled: false, ebPrice: 0, ebEndDate: '', ebMaxTickets: 0,
       resaleCapEnabled: false, resaleCapPercent: 0
     });
@@ -221,7 +221,6 @@ function OrganizerDashboard() {
       return toast.error("Please select location on map");
     }
 
-
     try {
       const payload = {
         event: formData.event,
@@ -234,6 +233,7 @@ function OrganizerDashboard() {
         price: Number(formData.price),
         totalTickets: Number(formData.totalTickets),
         image: formData.image,
+        description: formData.description || '',
         organizerId: authUser.uid,
         resaleCapEnabled: !!formData.resaleCapEnabled,
         resaleCapPercent: Number(formData.resaleCapPercent || 0),
@@ -292,6 +292,7 @@ function OrganizerDashboard() {
       price: ev.price || 0,
       totalTickets: ev.totalTickets || 0,
       image: ev.image || '',
+      description: ev.description || '',
       ebEnabled: Boolean(ev.earlyBird?.enabled),
       ebPrice: ev.earlyBird?.discountPrice || 0,
       ebEndDate: ev.earlyBird?.endDate ? new Date(ev.earlyBird.endDate).toISOString().slice(0, 10) : '',
@@ -460,7 +461,6 @@ function OrganizerDashboard() {
                 {/* Royalty Settings (off-chain ledger) */}
                 <div className={`${glassCard} p-6`}>
                   <h3 className="text-lg font-bold text-black mb-2">Royalty Settings</h3>
-                
 
                   <div className="flex flex-col lg:flex-row lg:items-end gap-10 mb-4">
                     <div className="lg:col-span-2">
@@ -612,7 +612,7 @@ function OrganizerDashboard() {
                             <span>•</span>
                             <span>{ev.time}</span>
                             <span>•</span>
-                            <span className="font-semibold text-[#FFA500]">${ev.price}</span>
+                            <span className="font-semibold text-[#FFA500]">Rs {ev.price}</span>
                           </div>
                         </div>
                       </div>
@@ -712,6 +712,19 @@ function OrganizerDashboard() {
                           <input type="text" className={`${glassInput} w-full py-3 px-4`} placeholder="https://..."
                             value={formData.image} onChange={e => setFormData({ ...formData, image: e.target.value })} />
                         </div>
+                      </div>
+
+                      <div className="px-2">
+                        <label className="block text-xs font-bold text-black/60 uppercase mb-2 ml-1">Event Description</label>
+                        <textarea
+                          rows={5}
+                          maxLength={5000}
+                          className={`${glassInput} w-full py-3 px-4 resize-none`}
+                          placeholder="Describe your event — what attendees can expect, schedule highlights, special guests, etc."
+                          value={formData.description}
+                          onChange={e => setFormData({ ...formData, description: e.target.value })}
+                        />
+                        <p className="text-xs text-black/40 text-right mt-1">{(formData.description || '').length} / 5000</p>
                       </div>
 
                       <div className="rounded-2xl border border-white/10 bg-white/5 p-4">

@@ -94,8 +94,8 @@ export async function PUT(req, { params }) {
 
     const allowedFields = new Set([
       'event', 'date', 'time', 'location', 'category', 'price',
-      'totalTickets', 'remainingTickets', 'image', 'earlyBird',
-      'latitude', 'longitude', 'resaleCapEnabled', 'resaleCapPercent'
+      'totalTickets', 'remainingTickets', 'image', 'description', 'earlyBird',
+      'latitude', 'longitude', 'resaleCapEnabled', 'resaleCapPercent',
     ]);
 
     const safeUpdates = Object.fromEntries(
