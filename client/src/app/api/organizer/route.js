@@ -9,7 +9,7 @@ export async function POST(req) {
 
         
         await dbConnect();
-        const { event, date, time, location, latitude, longitude, category, price, totalTickets, image, organizerId, earlyBird, resaleCapEnabled, resaleCapPercent } = await req.json();
+        const { event, date, time, location, latitude, longitude, category, price, totalTickets, image, organizerId, earlyBird, resaleCapEnabled, resaleCapPercent, description } = await req.json();
 
         const newEvent = await Event.create({
         event,
@@ -36,8 +36,8 @@ export async function POST(req) {
 
         return NextResponse.json({ message: 'Event created successfully' }, { status: 201 });
     } catch (error) {
-        
-        return NextResponse.json({ message: 'Error creating event' }, { status: 500 });
+        console.error('Error creating event:', error);
+        return NextResponse.json({ message: 'Error creating event', error: error.message }, { status: 500 });
     }
 
 }
