@@ -37,7 +37,7 @@ export async function POST(req, { params }) {
             const capEnabled = ticket.eventId?.resaleCapEnabled === true;
             const capPercent = Number(ticket.eventId?.resaleCapPercent);
             if (capEnabled && Number.isFinite(capPercent) && capPercent >= 0) {
-                const basePrice = Number(ticket.originalPurchasePrice ?? ticket.eventId?.price);
+                const basePrice = Number(ticket.amountPaid ?? ticket.originalPurchasePrice ?? ticket.eventId?.price);
                 if (Number.isFinite(basePrice) && basePrice > 0) {
                     const maxAllowed = basePrice * (1 + (capPercent / 100));
                     if (price > maxAllowed + 0.01) {

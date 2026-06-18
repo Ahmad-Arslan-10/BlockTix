@@ -232,7 +232,7 @@ export async function POST(req) {
       custodial: true,
       ownerWallet: platformWallet,
       originalOrganizerId: updatedEvent.organizerId,
-      originalPurchasePrice: ticketPrice,
+      originalPurchasePrice: paidAmount,
       royaltyBps,
       royaltyReceiverWallet: organizerWalletAddress,
       paymentProvider: "stripe",
